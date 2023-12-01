@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  web:
+    build: ./
+    command: uvicorn main:app --reload --workers 1 --host 0.0.0.0 --port 8000
+    volumes:
+      - ./app:/usr/src/app
+    ports:
+      - 8000:8000
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://postgres:password@dcs-postgres:5432/movies
+    depends_on:
+      - dcs-postgres    
+    networks:
+      - local-network  
+
+  dcs-postgres:
+    image: postgres:15.3-alpine
+    container_name: dcs-postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: postgres
+    ports:
+      - 5432:5432
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+      - ./01_movie.sql:/docker-entrypoint-initdb.d/01_movie.sql
+    networks:
+      - local-network
+
+  dcs-pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: dcs-pgadmin
+    restart: always
+    depends_on:
+      - dcs-postgres
+    environment:
+      PGADMIN_DEFAULT_EMAIL: user@localhost.com
+      PGADMIN_DEFAULT_PASSWORD: password
+    ports:
+      - 8080:80
+    volumes:
+      - ./data/pgadmin:/var/lib/pgadmin
+    networks:
+      - local-network
+
+networks:
+  local-network:
+    driver: bridge
