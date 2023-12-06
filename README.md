@@ -1,3 +1,2 @@
-# fastapi
-Fast Api  - Pydantic - Sqlalchemy
-Postgres - Docker
+# fastapi-sqlalchemy-docker
+
